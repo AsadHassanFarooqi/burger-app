@@ -1,0 +1,32 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.ingredient__name {
+  font-size: 20px;
+  color: #fff;
+  margin-right: 20px;
+  width: 70px;
+}
+
+.ingredient__btn {
+  background: linear-gradient(#fc8955, #dd9574);
+  color: #fff;
+  width: 100px;
+  height: 40px;
+  outline: none;
+  border: 0;
+  margin-right: 5px;
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: 4px 4px 5px 0px rgba(0, 0, 0, 0.19);
+  cursor: pointer;
+}
+
+.ingredient__btn:disabled {
+  background: rgba(239, 239, 239, 0.3);
+  color: #fff;
+  border-color: rgba(118, 118, 118, 0.3);
+}
