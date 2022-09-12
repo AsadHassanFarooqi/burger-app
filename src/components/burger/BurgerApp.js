@@ -31,13 +31,13 @@ function reducer(state, action) {
     case "Cheese decrement":
       return { ...state, cheese: state.cheese - 1 };
     case "Cheese":
-      return { ...state, cheese: state.count };
+      return { ...state, cheese: action.count };
     case "Meat increment":
       return { ...state, meat: state.meat + 1 };
     case "Meat decrement":
       return { ...state, meat: state.meat - 1 };
     case "Meat":
-      return { ...state, meat: state.count };
+      return { ...state, meat: action.count };
     default:
       throw new Error();
   }
@@ -58,38 +58,52 @@ const calculatePrice = (
   return total;
 };
 
-const BurgerApp = () => {
-  // arrays to push ingredients inside burger
-  let lettuceArr = [],
-    baconArr = [],
-    cheeseArr = [],
-    meatArr = [];
-
   // reducer initial state
-  let initialState = {
-    lettuce: 0,
-    bacon: 0,
-    cheese: 0,
-    meat: 0,
-  };
+let initialState = JSON.parse(localStorage.getItem("ingredients")) || {
+  lettuce: 0,
+  bacon: 0,
+  cheese: 0,
+  meat: 0,
+};
 
+
+const getItemJSX = (type, count) => {
+    if (!count) return <></>;
+    const data = [];
+    for (let i = 0; i < count; i++) {
+      data.push(<div key={type} className={"burger__"+ type}></div>);
+    }
+    return <>{data.map((item, index) => <span key={index}>{item}</span>)}</>;
+}
+  
+const getIngredients = (state) => {
+  return <>{Object.keys(state).map(key => getItemJSX(key, state[key]))}</>
+}  
+
+const BurgerApp = () => {
   // Reducer called
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  useEffect(() => {
-    return () => {
-      localStorage.setItem("ingredients", JSON.stringify(state));
-    };
-  });
+  const stateChangeHandler = (type) => {
+    dispatch({ type });
+  };
 
+  useEffect(() => {
+    localStorage.setItem("ingredients", JSON.stringify(state));
+  }, [state])
+  
   useEffect(() => { 
     let ingredients = localStorage.getItem("ingredients");
+    debugger;
     if (ingredients) {
       let tempState = JSON.parse(ingredients);
-      dispatch({ type: "Lettuce", count: tempState.lettuce });
-      dispatch({ type: "Bacon", count: tempState.bacon });
-      dispatch({ type: "Cheese", count: tempState.cheese });
-      dispatch({ type: "Meat", count: tempState.meat });
+      if(tempState.lettuce) dispatch({ type: "Lettuce", count: tempState.lettuce});
+      if (tempState.bacon)
+        dispatch({ type: "Bacon", count: tempState.bacon });
+      if (tempState.cheese)
+        dispatch({ type: "Cheese", count: tempState.cheese });
+      if (tempState.meat
+      ) dispatch({ type: "Meat", count: tempState.meat });
     }
   },[dispatch]);
 
@@ -98,33 +112,16 @@ const BurgerApp = () => {
     [state]
   );
 
-  // Loop to store ingredients into respective array
-  for (let i = 0; i < state.lettuce; i++) {
-    lettuceArr.push(<div className="burger__lettuce"></div>);
-  }
-  for (let i = 0; i < state.bacon; i++) {
-    baconArr.push(<div className="burger__bacon"></div>);
-  }
-  for (let i = 0; i < state.cheese; i++) {
-    cheeseArr.push(<div className="burger__cheese"></div>);
-  }
-  for (let i = 0; i < state.meat; i++) {
-    meatArr.push(<div className="burger__meat"></div>);
-  }
+  const data = useMemo(() => {
+    return getIngredients(state);
+  }, [state]);
 
   return (
     <div className="container">
       <div className="burger__wrapper">
         <div className="burger">
           <div className="burger__topbun"></div>
-          {state.lettuce > 0 &&
-            lettuceArr.map((item, index) => <span key={index}>{item}</span>)}
-          {state.bacon > 0 &&
-            baconArr.map((item, index) => <span key={index}>{item}</span>)}
-          {state.cheese > 0 &&
-            cheeseArr.map((item, index) => <span key={index}>{item}</span>)}
-          {state.meat > 0 &&
-            meatArr.map((item, index) => <span key={index}>{item}</span>)}
+          {data}
           <div className="burger__bottombun"></div>
         </div>
       </div>
@@ -134,8 +131,8 @@ const BurgerApp = () => {
           {ingredients.map((ingredient) => (
             <Ingredient
               ingredientName={ingredient}
-              moreBtn={() => dispatch({ type: `${ingredient} increment` })}
-              lessBtn={() => dispatch({ type: `${ingredient} decrement` })}
+              moreBtn={() => stateChangeHandler(`${ingredient} increment`)}
+              lessBtn={() => stateChangeHandler(`${ingredient} decrement`)}
               key={ingredient}
               count={state}
             />
